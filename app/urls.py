@@ -15,7 +15,7 @@ urlpatterns = [
     path('api/v1/', include('Feed.urls')),
 
     # Rotas para a documentação com Swagger e Redoc
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),  # Gera o schema da API
-    path('swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),  # UI do Swagger
-    path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),  # UI do Redoc (alternativa ao Swagger)
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),  
+    path('swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'), 
+    path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'), 
 ]
