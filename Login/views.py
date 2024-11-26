@@ -5,12 +5,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import get_user_model  
-from django.contrib.auth.hashers import check_password as check_pass  # Função para verificar a senha
+from django.contrib.auth.hashers import check_password as check_pass  
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import api_view, permission_classes  # Importe permission_classes corretamente
+from rest_framework.decorators import api_view, permission_classes  
 from rest_framework_simplejwt.tokens import RefreshToken
 import re
-
 from rest_framework import status
 
 User = get_user_model() 
@@ -40,8 +39,6 @@ def login_view(request):
         "access": access_token,
         "refresh": str(refresh),
     }, status=status.HTTP_200_OK)
-    
-    
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])  
@@ -76,13 +73,10 @@ def change_password(request):
             {"mensagem": f"Erro ao alterar a senha: {str(e)}. Tente novamente mais tarde."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-        
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])  
 def logout(request):
     refresh_token = request.data.get('refresh_token')
-    
     if not refresh_token:
         return Response(
             {"mensagem": "O refresh_token é obrigatório para realizar o logout."},

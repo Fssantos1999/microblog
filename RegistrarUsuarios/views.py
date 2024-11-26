@@ -10,23 +10,20 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import check_password as check_pass  # Importar a função correta
 import re
 
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_user(request):
-    if request.method == 'POST':
-        serializer = RegisterUserSerializer(data=request.data)
-        if serializer.is_valid():
-            # A senha é tratada e criptografada usando set_password
-            password = request.data.get('password', '')
-            if password:
-                user = serializer.save()
-                user.set_password(password)  # Criptografa a senha
-                user.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response({"mensagem": "Senha obrigatória!"}, status=status.HTTP_400_BAD_REQUEST)
+    serializer = RegisterUserSerializer(data=request.data)
+    if serializer.is_valid():
+        password = request.data.get('password', '')
+        if password:
+            user = serializer.save()
+            user.set_password(password)  
+            user.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response({"mensagem": "Senha obrigatória!"}, status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])  
@@ -54,15 +51,13 @@ def delete_user(request, usuario_email):
         status=status.HTTP_204_NO_CONTENT
     )
 
-
-
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_user(request, usuario_email):
     try:
         user = RegisterUser.objects.get(email=usuario_email)  
     except RegisterUser.DoesNotExist:
-        return Response(
+        return Response(    
             {"Erro": "Usuário não encontrado."},
             status=status.HTTP_404_NOT_FOUND
         )
@@ -76,9 +71,6 @@ def update_user(request, usuario_email):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
 
 #Lista usuarios de 5 em 5 
 @api_view(['GET'])
@@ -101,23 +93,31 @@ def list_user(request):
     return Response(response_data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([AllowAny])  
 def get_user_id(request):
-    user_id = request.GET.get('user_id')
+    user_id = request.GET.get('id')  
+    
     if not user_id:
         return Response(
-            {'mensagem':'favor inserir o id para que possa ser feito a request'},
+            {'mensagem': 'Favor inserir o ID para que a requisição possa ser realizada'},
             status=status.HTTP_400_BAD_REQUEST
         )
     try:
         user = RegisterUser.objects.get(id=user_id)
+        
         return Response({
             'id': user.id,
+            'nome': user.nome,
             'apelido': user.apelido_usuario,
-            'email': user.email
+            'email': user.email,
+            'telefone': user.telefone,
+            'data_nascimento': user.data_nascimento,
+            'usuario_ativo': user.usuario_ativo,
+            'administrador': user.administrador,
+            'date_joined': user.date_joined,
         })
+    
     except RegisterUser.DoesNotExist:
         return Response({
-            'mensagem: f"Usuario  com ID {user_id} não  localizado, favor verificar id ou usuario foi deletado"'
-        })
-
+            'mensagem': f"Usuário com ID {user_id} não localizado. Favor verificar o ID ou se o usuário foi deletado."
+        }, status=status.HTTP_404_NOT_FOUND)
