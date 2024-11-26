@@ -68,24 +68,11 @@ def listar_comentarios(request, postagem_id):
         )
     return Response(list(comentarios), status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def listar_comentarios(request, postagem_id):
-    # Filtra os comentários pela postagem_id
-    comentarios = ComentarPostagem.objects.filter(postagem_id=postagem_id)
-    paginador = PageNumberPagination()
-    paginador.page_size = 5
-    paginador.page_size_query_param = 'tamanho_pagina'
-    paginador.max_page_size = 20
-    resultados_paginados = paginador.paginate_queryset(comentarios, request)
-    serializer = ComentarPostagemSerializer(resultados_paginados, many=True)
-
-    return paginador.get_paginated_response({
-        "status": "sucesso",
-        "total_itens": paginador.page.paginator.count,
-        "total_paginas": paginador.page.paginator.num_pages,
-        "pagina_atual": paginador.page.number,
-        "possui_proxima": paginador.page.has_next(),
-        "possui_anterior": paginador.page.has_previous(),
-        "comentarios": serializer.data
-    })
+def criar_comentario(request):
+    serializer = ComentarPostagemSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(autor=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
